@@ -1,0 +1,417 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --azul-800:#0a3a68;--azul-700:#0e5a9e;--azul-600:#1a4f8e;--azul-50:#e8eef5;
+  --ocre-300:#d4a85c;
+  --papel:#f8f5ee;--n50:#f3f0eb;--n100:#e8e4dd;--n200:#d4cfc8;
+  --tinta:#171614;--tinta-3:#6b6760;--tinta-4:#9e9a95;
+  --verde:#2f7d32;--verde-bg:#e8f5e9;--rojo:#a8322c;
+  --r-sm:4px;--r-md:8px;
+  --tr:180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--papel);font-size:15px;line-height:1.5;}
+.hdr{background:linear-gradient(135deg,var(--azul-800) 0%,var(--azul-600) 100%);padding:1.25rem 1.75rem;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(184,134,61,.08) 18px,rgba(184,134,61,.08) 19px);pointer-events:none;}
+.hdr-inner{position:relative;z-index:1;}
+.hdr-eye{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;}
+.hdr-title{font-family:'IBM Plex Serif',serif;font-size:26px;font-weight:700;color:#fff;line-height:1.05;}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:5px;}
+.prog-bar{background:rgba(255,255,255,.15);height:3px;}
+.prog-fill{background:var(--ocre-300);height:3px;transition:width .4s ease;}
+.steps{background:#fff;border-bottom:1px solid var(--n200);display:flex;}
+.step{flex:1;padding:10px 8px;text-align:center;font-size:10px;font-weight:600;color:var(--tinta-4);border-bottom:2px solid transparent;transition:all var(--tr);}
+.step.on{color:var(--azul-700);border-bottom-color:var(--azul-700);}
+.step.done{color:var(--verde);border-bottom-color:var(--verde);}
+.step-n{display:block;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;margin-bottom:2px;}
+.fbody{padding:1.5rem 1.75rem;max-width:660px;margin:0 auto;}
+.sec{display:none;} .sec.on{display:block;}
+.sec-title{font-family:'IBM Plex Serif',serif;font-size:20px;font-weight:700;color:var(--tinta);margin-bottom:3px;}
+.sec-desc{font-size:13px;color:var(--tinta-3);margin-bottom:1.25rem;line-height:1.6;}
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--tinta-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+.fg label .req{color:var(--rojo);margin-left:2px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;border:1px solid var(--n200);border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--tinta);background:var(--papel);transition:border-color var(--tr);}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--azul-700);box-shadow:0 0 0 2px rgba(14,90,158,.1);}
+.fg input.err,.fg select.err{border-color:var(--rojo);}
+.fg textarea{resize:vertical;min-height:76px;}
+.fg .hint{font-size:11px;color:var(--tinta-4);margin-top:4px;}
+.fg .errmsg{font-size:11px;color:var(--rojo);margin-top:4px;display:none;}
+.fg.haserr .errmsg{display:block;}
+.otros-wrap{margin-top:8px;display:none;}
+.otros-wrap.on{display:block;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.radio-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.ri{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--n200);border-radius:var(--r-sm);cursor:pointer;background:var(--papel);transition:all var(--tr);font-size:13px;}
+.ri:hover{border-color:var(--azul-600);}
+.ri.on{border-color:var(--azul-700);background:var(--azul-50);}
+.ri input[type=radio]{accent-color:var(--azul-700);flex-shrink:0;}
+.chk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;margin-top:4px;}
+.ci{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--n200);border-radius:var(--r-sm);cursor:pointer;background:var(--papel);font-size:13px;transition:border-color var(--tr);}
+.ci:hover{border-color:var(--azul-600);}
+.ci input[type=checkbox]{accent-color:var(--azul-700);flex-shrink:0;}
+.ref-block{background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-md);padding:1rem;margin-bottom:10px;}
+.ref-lbl{font-size:10px;font-weight:600;color:var(--tinta-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.consent-box{background:var(--azul-50);border-left:2px solid var(--azul-700);padding:1rem;border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:13px;color:var(--tinta-3);line-height:1.65;margin-bottom:1rem;}
+.consent-chk{display:flex;align-items:flex-start;gap:9px;margin-top:10px;}
+.consent-chk input{margin-top:3px;accent-color:var(--azul-700);flex-shrink:0;}
+.consent-chk span{font-size:13px;color:var(--tinta);font-weight:500;}
+.resumen{background:var(--n50);border:1px solid var(--n200);border-radius:var(--r-md);padding:1rem 1.25rem;margin-bottom:1rem;}
+.rs-title{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-3);border-bottom:1px solid var(--n200);padding-bottom:4px;margin:10px 0 7px;}
+.rs-title:first-child{margin-top:0;}
+.rs-row{display:flex;gap:8px;font-size:13px;margin-bottom:4px;line-height:1.4;}
+.rs-lbl{color:var(--tinta-3);min-width:110px;font-weight:500;flex-shrink:0;}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--n200);}
+.btn{padding:9px 22px;border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all var(--tr);border:none;}
+.btn-prev{background:var(--papel);border:1px solid var(--n200);color:var(--tinta-3);}
+.btn-prev:hover{border-color:var(--azul-600);color:var(--azul-700);}
+.btn-next{background:var(--azul-700);color:#fff;}
+.btn-next:hover{background:var(--azul-800);}
+.btn-send{background:var(--verde);color:#fff;display:flex;align-items:center;gap:8px;}
+.btn-send:hover{background:#1b5e20;}
+.btn-send:disabled{background:var(--n200);color:var(--tinta-4);cursor:not-allowed;}
+.enviando{display:none;align-items:center;gap:8px;font-size:13px;color:var(--tinta-3);}
+.spinner{width:16px;height:16px;border:2px solid var(--n200);border-top-color:var(--azul-700);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.suc{display:none;text-align:center;padding:2.5rem 1.5rem;}
+.suc.on{display:block;}
+.suc-icon{width:60px;height:60px;background:var(--verde-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.suc-title{font-family:'IBM Plex Serif',serif;font-size:26px;font-weight:700;color:var(--tinta);margin-bottom:8px;}
+.suc-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:var(--azul-700);background:var(--azul-50);border:1px solid var(--n200);border-radius:var(--r-sm);padding:10px 20px;display:inline-block;margin-bottom:1.25rem;}
+.suc-sub{font-size:13px;color:var(--tinta-3);max-width:380px;margin:0 auto 1.5rem;line-height:1.65;}
+.btn-new{background:var(--azul-800);color:#fff;padding:9px 22px;border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;}
+.err-banner{background:#fdecea;border:1px solid #f5c6c5;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--rojo);margin-bottom:1rem;display:none;}
+.err-banner.on{display:block;}
+</style>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-eye">CEM · Oficina de Empleo · Municipalidad de Esquina</div>
+    <div class="hdr-title">Inscripción a la Bolsa de Oficios</div>
+    <div class="hdr-sub">Completá el formulario para aparecer en el registro municipal de trabajadores</div>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="pf" style="width:25%"></div></div>
+
+<div class="steps">
+  <div class="step on" id="sn1"><span class="step-n">01</span>Datos personales</div>
+  <div class="step" id="sn2"><span class="step-n">02</span>Oficio y servicios</div>
+  <div class="step" id="sn3"><span class="step-n">03</span>Referencias</div>
+  <div class="step" id="sn4"><span class="step-n">04</span>Consentimiento</div>
+</div>
+
+<div class="fbody">
+
+  <div class="sec on" id="s1">
+    <div class="sec-title">Datos personales</div>
+    <div class="sec-desc">Esta información permite identificarte y contactarte cuando alguien solicite tus servicios.</div>
+    <div class="row2">
+      <div class="fg" id="fg-nombre"><label>Nombre y apellido <span class="req">*</span></label><input type="text" id="f-nombre" placeholder="Ej: María González"/><div class="errmsg">Campo requerido</div></div>
+      <div class="fg" id="fg-dni"><label>DNI <span class="req">*</span></label><input type="text" id="f-dni" placeholder="Sin puntos ni espacios"/><div class="errmsg">DNI inválido (7 u 8 dígitos)</div></div>
+    </div>
+    <div class="row3">
+      <div class="fg"><label>Edad</label><input type="number" id="f-edad" placeholder="Ej: 35" min="16" max="99"/></div>
+      <div class="fg" id="fg-tel"><label>Teléfono / WhatsApp <span class="req">*</span></label><input type="tel" id="f-tel" placeholder="3777-XXXXXX"/><div class="errmsg">Campo requerido</div></div>
+      <div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="Opcional"/></div>
+    </div>
+    <div class="fg" id="fg-barrio">
+      <label>Barrio / Localidad <span class="req">*</span></label>
+      <select id="f-barrio" onchange="toggleOtros(this.value)">
+        <option value="">Seleccioná...</option>
+        <option>100 Viviendas</option><option>128 Viviendas</option><option>1ra Sección (Ejido)</option>
+        <option>30 Viviendas</option><option>34 Viviendas</option><option>35 Viviendas</option>
+        <option>3ra Sección</option><option>48 Viviendas</option><option>80 Viviendas</option>
+        <option>90 Viviendas</option><option>AeroClub</option><option>Antártida Argentina</option>
+        <option>Arroyo Vega</option><option>Av. Juan Ramón Vidal</option><option>Bello Horizonte</option>
+        <option>Berón de Astrada</option><option>Bicentenario</option><option>Camino del Medio</option>
+        <option>Centro</option><option>Cooperativa</option><option>Costanera</option>
+        <option>Curva Norte (J. Ferreira)</option><option>El Piropo</option><option>Guayquiraró</option>
+        <option>Hospital</option><option>Inmaculada</option><option>Islas Malvinas</option>
+        <option>Itatí</option><option>La Providencia</option><option>La Tablada</option>
+        <option>Las Palmeras</option><option>Los Ceibos</option><option>Los Lirios</option>
+        <option>Los Sauces</option><option>Mancini</option><option>Obras Sanitarias</option>
+        <option>Quinta Cuatro</option><option>Ruta 12</option><option>San Antonio</option>
+        <option>San Benito</option><option>San Cayetano</option><option>San Fernando</option>
+        <option>Santa Catalina</option><option>Santa Librada</option><option>Villa Oristia</option>
+        <option>Villa Soldati</option><option>Otros</option>
+      </select>
+      <div class="errmsg">Seleccioná una opción</div>
+      <div class="otros-wrap" id="otros-wrap">
+        <input type="text" id="f-barrio-otros" placeholder="Especificá el barrio o paraje"/>
+      </div>
+    </div>
+    <div class="fg"><label>Dirección</label><input type="text" id="f-dir" placeholder="Calle y número (opcional)"/></div>
+    <div class="fg"><label>Redes sociales</label><input type="text" id="f-redes" placeholder="Ej: @nombreusuario en Instagram o Facebook"/><div class="hint">Si tenés trabajos publicados en redes, ayuda a que te encuentren más fácil.</div></div>
+    <div class="actions"><span></span><button class="btn btn-next" onclick="irA(2)">Siguiente →</button></div>
+  </div>
+
+  <div class="sec" id="s2">
+    <div class="sec-title">Oficio y servicios</div>
+    <div class="sec-desc">Contanos qué hacés y cómo trabajás. Mientras más detalle, más fácil es que te encuentren.</div>
+    <div class="fg" id="fg-oficio"><label>Oficio principal <span class="req">*</span></label>
+      <select id="f-oficio">
+        <option value="">Seleccioná...</option>
+        <option>Albañil / Construcción</option><option>Pintor/a</option><option>Carpintero/a</option>
+        <option>Electricista</option><option>Plomero/a</option><option>Gasista</option>
+        <option>Cuidadora / Acompañante</option><option>Enfermero/a</option>
+        <option>Profesor/a de arte</option><option>Profesor/a particular</option>
+        <option>Modista / Costurero/a</option><option>Zapatero/a</option>
+        <option>Mecánico/a</option><option>Jardinero/a</option><option>Cocinero/a</option>
+        <option>Peluquero/a</option><option>Otro</option>
+      </select>
+      <div class="errmsg">Seleccioná un oficio</div>
+    </div>
+    <div class="fg"><label>Oficio secundario</label><input type="text" id="f-oficio2" placeholder="Ej: También hago trabajos de pintura"/></div>
+    <div class="fg" id="fg-serv"><label>Descripción de servicios <span class="req">*</span></label>
+      <textarea id="f-serv" placeholder="Describí qué trabajos hacés. Ej: Instalaciones eléctricas domiciliarias, tableros, iluminación LED..."></textarea>
+      <div class="hint">Sé específico/a — eso ayuda a que quien busca tu servicio sepa exactamente qué ofrecés.</div>
+      <div class="errmsg">Describí al menos brevemente tus servicios</div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Años de experiencia</label><input type="number" id="f-exp" placeholder="Ej: 8" min="0" max="60"/></div>
+      <div class="fg"><label>Zona de trabajo</label>
+        <select id="f-zona"><option>Solo en Esquina</option><option>Esquina y localidades cercanas</option><option>Toda la provincia</option></select>
+      </div>
+    </div>
+    <div class="fg"><label>¿Tiene herramientas o materiales propios?</label>
+      <div class="radio-row" id="rg-herr">
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="si"/><span>Sí, propias</span></label>
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="no"/><span>No</span></label>
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="parcial"/><span>Algunas</span></label>
+      </div>
+    </div>
+    <div class="fg"><label>Disponibilidad horaria</label>
+      <div class="chk-grid">
+        <label class="ci"><input type="checkbox" name="disp" value="Mañana"/><span>Mañana</span></label>
+        <label class="ci"><input type="checkbox" name="disp" value="Tarde"/><span>Tarde</span></label>
+        <label class="ci"><input type="checkbox" name="disp" value="Noche"/><span>Noche</span></label>
+        <label class="ci"><input type="checkbox" name="disp" value="Sábados"/><span>Sábados</span></label>
+        <label class="ci"><input type="checkbox" name="disp" value="Domingos"/><span>Domingos</span></label>
+        <label class="ci"><input type="checkbox" name="disp" value="Urgencias"/><span>Urgencias</span></label>
+      </div>
+    </div>
+    <div class="fg"><label>¿Trabaja solo/a o con equipo?</label>
+      <div class="radio-row" id="rg-eq">
+        <label class="ri" onclick="selR(this,'rg-eq')"><input type="radio" name="eq" value="Solo/a"/><span>Solo/a</span></label>
+        <label class="ri" onclick="selR(this,'rg-eq')"><input type="radio" name="eq" value="Con equipo"/><span>Con equipo</span></label>
+        <label class="ri" onclick="selR(this,'rg-eq')"><input type="radio" name="eq" value="Según la obra"/><span>Según la obra</span></label>
+      </div>
+    </div>
+    <div class="fg"><label>Fotos de trabajos anteriores</label><input type="text" id="f-fotos" placeholder="Link a Drive, Instagram o indicar si tiene disponibles"/><div class="hint">No es obligatorio, pero ayuda mucho a mostrar la calidad del trabajo.</div></div>
+    <div class="actions">
+      <button class="btn btn-prev" onclick="irA(1)">← Anterior</button>
+      <button class="btn btn-next" onclick="irA(3)">Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="sec" id="s3">
+    <div class="sec-title">Referencias</div>
+    <div class="sec-desc">Indicá al menos una persona o empresa que pueda dar referencias sobre tu trabajo.</div>
+    <div class="ref-block">
+      <div class="ref-lbl">Referencia 1</div>
+      <div class="row2">
+        <div class="fg" id="fg-r1n"><label>Nombre <span class="req">*</span></label><input type="text" id="f-r1n" placeholder="Nombre completo"/><div class="errmsg">Campo requerido</div></div>
+        <div class="fg" id="fg-r1t"><label>Teléfono <span class="req">*</span></label><input type="tel" id="f-r1t" placeholder="3777-XXXXXX"/><div class="errmsg">Campo requerido</div></div>
+      </div>
+      <div class="fg"><label>Vínculo</label><input type="text" id="f-r1v" placeholder="Ej: cliente, vecino, empleador anterior"/></div>
+    </div>
+    <div class="ref-block">
+      <div class="ref-lbl">Referencia 2 (opcional)</div>
+      <div class="row2">
+        <div class="fg"><label>Nombre</label><input type="text" id="f-r2n" placeholder="Nombre completo"/></div>
+        <div class="fg"><label>Teléfono</label><input type="tel" id="f-r2t" placeholder="3777-XXXXXX"/></div>
+      </div>
+      <div class="fg"><label>Vínculo</label><input type="text" id="f-r2v" placeholder="Ej: cliente, vecino, empleador anterior"/></div>
+    </div>
+    <div class="fg"><label>Observaciones adicionales</label><textarea id="f-obs" placeholder="¿Hay algo más que quieras que el municipio sepa?"></textarea></div>
+    <div class="actions">
+      <button class="btn btn-prev" onclick="irA(2)">← Anterior</button>
+      <button class="btn btn-next" onclick="irA(4)">Siguiente →</button>
+    </div>
+  </div>
+
+  <div class="sec" id="s4">
+    <div class="sec-title">Consentimiento y confirmación</div>
+    <div class="sec-desc">Revisá tus datos antes de enviar.</div>
+    <div class="resumen" id="res"></div>
+    <div class="consent-box">
+      Al inscribirte en la Bolsa de Oficios de la Municipalidad de Esquina, autorizás que tus datos de contacto y oficio sean compartidos con vecinas y vecinos, empresas e instituciones que busquen trabajadores a través de la Oficina de Empleo Municipal. Tus datos no serán cedidos a terceros con fines comerciales y podés solicitar la baja o modificación de tu inscripción en cualquier momento.
+      <div class="consent-chk"><input type="checkbox" id="chk-ok"/><span>Leí y acepto que mis datos sean parte del registro municipal de la Bolsa de Oficios.</span></div>
+    </div>
+    <div class="fg"><label>Agente que toma la inscripción</label><input type="text" id="f-agente" placeholder="Nombre del agente municipal (dejar en blanco si es autogestión)"/></div>
+    <div class="err-banner" id="err-banner">Hubo un error al guardar. Verificá tu conexión e intentá nuevamente.</div>
+    <div class="actions">
+      <button class="btn btn-prev" onclick="irA(3)">← Anterior</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="enviando" id="enviando"><div class="spinner"></div><span>Guardando en el registro...</span></div>
+        <button class="btn btn-send" id="btn-enviar" onclick="enviar()">Registrar inscripción</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="suc" id="suc">
+    <div class="suc-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2f7d32"/><path d="M8 14.5l4.5 4.5L20 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="suc-title">Inscripción registrada</div>
+    <div class="suc-num" id="num-reg"></div>
+    <div class="suc-sub">El trabajador fue incorporado a la Bolsa de Oficios de la Municipalidad de Esquina. Sus datos ya están disponibles para consulta en la Oficina de Empleo.</div>
+    <button class="btn-new" onclick="reiniciar()">Registrar otro trabajador</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFfNqAlRMQuYQm46agui4w71MFstg9JznNocPToMUp9vQjZpgOerZXL53Imm1lUL3UyQ/exec";
+let paso = 1;
+
+function toggleOtros(v){
+  document.getElementById('otros-wrap').classList.toggle('on', v==='Otros');
+}
+
+function irA(n){
+  if(n>paso&&!validar(paso))return;
+  paso=n;
+  document.querySelectorAll('.sec').forEach((s,i)=>s.classList.toggle('on',i+1===n));
+  document.querySelectorAll('.step').forEach((el,i)=>{el.classList.toggle('on',i+1===n);el.classList.toggle('done',i+1<n);});
+  document.getElementById('pf').style.width=(n/4*100)+'%';
+  if(n===4)buildRes();
+  window.scrollTo(0,0);
+}
+
+function selR(el,gid){
+  document.querySelectorAll('#'+gid+' .ri').forEach(r=>r.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function validar(p){
+  let ok=true;
+  const req=(id,fgid,test)=>{
+    const el=document.getElementById(id),fg=document.getElementById(fgid||'fg-'+id.replace('f-',''));
+    const v=el?el.value.trim():'';
+    const fail=test?!test(v):!v;
+    if(fg)fg.classList.toggle('haserr',fail);
+    if(el)el.classList.toggle('err',fail);
+    if(fail)ok=false;
+  };
+  if(p===1){
+    req('f-nombre');
+    req('f-dni','fg-dni',v=>/^\d{7,8}$/.test(v));
+    req('f-tel');
+    req('f-barrio','fg-barrio');
+    if(document.getElementById('f-barrio').value==='Otros'){
+      const ot=document.getElementById('f-barrio-otros');
+      if(!ot.value.trim()){ot.classList.add('err');ok=false;}else{ot.classList.remove('err');}
+    }
+  }
+  if(p===2){req('f-oficio','fg-oficio');req('f-serv','fg-serv');}
+  if(p===3){req('f-r1n','fg-r1n');req('f-r1t','fg-r1t');}
+  return ok;
+}
+
+function g(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+
+function getBarrio(){
+  const v=g('f-barrio');
+  return v==='Otros'?(g('f-barrio-otros')||'Otros'):v;
+}
+
+function buildRes(){
+  const disp=[...document.querySelectorAll('input[name=disp]:checked')].map(c=>c.value).join(', ')||'—';
+  const herr=document.querySelector('input[name=herr]:checked');
+  document.getElementById('res').innerHTML=`
+    <div class="rs-title">Datos personales</div>
+    <div class="rs-row"><span class="rs-lbl">Nombre</span><span>${g('f-nombre')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">DNI</span><span>${g('f-dni')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Teléfono</span><span>${g('f-tel')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Barrio</span><span>${getBarrio()}</span></div>
+    ${g('f-redes')?`<div class="rs-row"><span class="rs-lbl">Redes</span><span>${g('f-redes')}</span></div>`:''}
+    <div class="rs-title">Oficio</div>
+    <div class="rs-row"><span class="rs-lbl">Oficio principal</span><span>${g('f-oficio')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Servicios</span><span>${g('f-serv').substring(0,120)}${g('f-serv').length>120?'…':''}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Experiencia</span><span>${g('f-exp')||'—'} años</span></div>
+    <div class="rs-row"><span class="rs-lbl">Zona</span><span>${g('f-zona')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Herramientas</span><span>${herr?herr.value:'—'}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Disponibilidad</span><span>${disp}</span></div>
+    <div class="rs-title">Referencia principal</div>
+    <div class="rs-row"><span class="rs-lbl">Nombre</span><span>${g('f-r1n')}</span></div>
+    <div class="rs-row"><span class="rs-lbl">Teléfono</span><span>${g('f-r1t')}</span></div>`;
+}
+
+async function enviar(){
+  if(!document.getElementById('chk-ok').checked){
+    alert('Necesitás aceptar el consentimiento para registrar la inscripción.');return;
+  }
+  const btn=document.getElementById('btn-enviar');
+  const env=document.getElementById('enviando');
+  const errBanner=document.getElementById('err-banner');
+  btn.style.display='none';
+  env.style.display='flex';
+  errBanner.classList.remove('on');
+
+  const payload={
+    nombre:      g('f-nombre'),
+    dni:         g('f-dni'),
+    edad:        g('f-edad'),
+    telefono:    g('f-tel'),
+    email:       g('f-email'),
+    barrio:      getBarrio(),
+    direccion:   g('f-dir'),
+    redes:       g('f-redes'),
+    oficio:      g('f-oficio'),
+    oficio2:     g('f-oficio2'),
+    servicios:   g('f-serv'),
+    experiencia: g('f-exp'),
+    zona:        g('f-zona'),
+    herramientas: (document.querySelector('input[name=herr]:checked')||{value:''}).value,
+    disponibilidad: [...document.querySelectorAll('input[name=disp]:checked')].map(c=>c.value).join(', '),
+    equipo:      (document.querySelector('input[name=eq]:checked')||{value:''}).value,
+    fotos:       g('f-fotos'),
+    ref1_nombre: g('f-r1n'),
+    ref1_telefono:g('f-r1t'),
+    ref1_vinculo:g('f-r1v'),
+    ref2_nombre: g('f-r2n'),
+    ref2_telefono:g('f-r2t'),
+    observaciones:g('f-obs'),
+    agente:      g('f-agente'),
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if(data.ok){
+      document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+      document.querySelector('.steps').style.display='none';
+      document.querySelector('.prog-bar').style.display='none';
+      document.getElementById('num-reg').textContent = data.id;
+      document.getElementById('suc').classList.add('on');
+    } else {
+      throw new Error(data.error||'Error desconocido');
+    }
+  } catch(err){
+    errBanner.classList.add('on');
+    btn.style.display='';
+    env.style.display='none';
+  }
+}
+
+function reiniciar(){
+  document.querySelector('.steps').style.display='flex';
+  document.querySelector('.prog-bar').style.display='block';
+  document.getElementById('suc').classList.remove('on');
+  document.querySelectorAll('input[type=text],input[type=tel],input[type=email],input[type=number],textarea').forEach(el=>el.value='');
+  document.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+  document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>el.checked=false);
+  document.querySelectorAll('.ri').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.haserr').forEach(el=>el.classList.remove('haserr'));
+  document.getElementById('otros-wrap').classList.remove('on');
+  document.getElementById('chk-ok').checked=false;
+  document.getElementById('btn-enviar').style.display='';
+  document.getElementById('enviando').style.display='none';
+  paso=1;irA(1);
+}
+</script>
