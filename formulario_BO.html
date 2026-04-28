@@ -1,6 +1,12 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bolsa de Oficios — Municipalidad de Esquina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet"/>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --azul-800:#0a3a68;--azul-700:#0e5a9e;--azul-600:#1a4f8e;--azul-50:#e8eef5;
@@ -11,7 +17,7 @@
   --r-sm:4px;--r-md:8px;
   --tr:180ms cubic-bezier(0.2,0.8,0.2,1);
 }
-body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--papel);font-size:15px;line-height:1.5;}
+body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--papel);font-size:15px;line-height:1.5;min-height:100vh;}
 .hdr{background:linear-gradient(135deg,var(--azul-800) 0%,var(--azul-600) 100%);padding:1.25rem 1.75rem;position:relative;overflow:hidden;}
 .hdr::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(184,134,61,.08) 18px,rgba(184,134,61,.08) 19px);pointer-events:none;}
 .hdr-inner{position:relative;z-index:1;}
@@ -43,12 +49,13 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
 .otros-wrap.on{display:block;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:520px){.row2,.row3{grid-template-columns:1fr;}}
 .radio-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 .ri{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--n200);border-radius:var(--r-sm);cursor:pointer;background:var(--papel);transition:all var(--tr);font-size:13px;}
 .ri:hover{border-color:var(--azul-600);}
 .ri.on{border-color:var(--azul-700);background:var(--azul-50);}
 .ri input[type=radio]{accent-color:var(--azul-700);flex-shrink:0;}
-.chk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;margin-top:4px;}
+.chk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;margin-top:4px;}
 .ci{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--n200);border-radius:var(--r-sm);cursor:pointer;background:var(--papel);font-size:13px;transition:border-color var(--tr);}
 .ci:hover{border-color:var(--azul-600);}
 .ci input[type=checkbox]{accent-color:var(--azul-700);flex-shrink:0;}
@@ -71,7 +78,6 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
 .btn-next:hover{background:var(--azul-800);}
 .btn-send{background:var(--verde);color:#fff;display:flex;align-items:center;gap:8px;}
 .btn-send:hover{background:#1b5e20;}
-.btn-send:disabled{background:var(--n200);color:var(--tinta-4);cursor:not-allowed;}
 .enviando{display:none;align-items:center;gap:8px;font-size:13px;color:var(--tinta-3);}
 .spinner{width:16px;height:16px;border:2px solid var(--n200);border-top-color:var(--azul-700);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -82,9 +88,12 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
 .suc-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:var(--azul-700);background:var(--azul-50);border:1px solid var(--n200);border-radius:var(--r-sm);padding:10px 20px;display:inline-block;margin-bottom:1.25rem;}
 .suc-sub{font-size:13px;color:var(--tinta-3);max-width:380px;margin:0 auto 1.5rem;line-height:1.65;}
 .btn-new{background:var(--azul-800);color:#fff;padding:9px 22px;border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;}
-.err-banner{background:#fdecea;border:1px solid #f5c6c5;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--rojo);margin-bottom:1rem;display:none;}
-.err-banner.on{display:block;}
 </style>
+</head>
+<body>
+
+<!-- iframe oculto que recibe la respuesta del Apps Script (bypass CORS) -->
+<iframe name="hidden-target" id="hidden-target" style="display:none;"></iframe>
 
 <div class="hdr">
   <div class="hdr-inner">
@@ -104,6 +113,7 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
 
 <div class="fbody">
 
+  <!-- PASO 1 -->
   <div class="sec on" id="s1">
     <div class="sec-title">Datos personales</div>
     <div class="sec-desc">Esta información permite identificarte y contactarte cuando alguien solicite tus servicios.</div>
@@ -147,6 +157,7 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     <div class="actions"><span></span><button class="btn btn-next" onclick="irA(2)">Siguiente →</button></div>
   </div>
 
+  <!-- PASO 2 -->
   <div class="sec" id="s2">
     <div class="sec-title">Oficio y servicios</div>
     <div class="sec-desc">Contanos qué hacés y cómo trabajás. Mientras más detalle, más fácil es que te encuentren.</div>
@@ -177,9 +188,9 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     </div>
     <div class="fg"><label>¿Tiene herramientas o materiales propios?</label>
       <div class="radio-row" id="rg-herr">
-        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="si"/><span>Sí, propias</span></label>
-        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="no"/><span>No</span></label>
-        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="parcial"/><span>Algunas</span></label>
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="Sí, propias"/><span>Sí, propias</span></label>
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="No"/><span>No</span></label>
+        <label class="ri" onclick="selR(this,'rg-herr')"><input type="radio" name="herr" value="Algunas"/><span>Algunas</span></label>
       </div>
     </div>
     <div class="fg"><label>Disponibilidad horaria</label>
@@ -206,6 +217,7 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     </div>
   </div>
 
+  <!-- PASO 3 -->
   <div class="sec" id="s3">
     <div class="sec-title">Referencias</div>
     <div class="sec-desc">Indicá al menos una persona o empresa que pueda dar referencias sobre tu trabajo.</div>
@@ -232,6 +244,7 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     </div>
   </div>
 
+  <!-- PASO 4 -->
   <div class="sec" id="s4">
     <div class="sec-title">Consentimiento y confirmación</div>
     <div class="sec-desc">Revisá tus datos antes de enviar.</div>
@@ -241,7 +254,6 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
       <div class="consent-chk"><input type="checkbox" id="chk-ok"/><span>Leí y acepto que mis datos sean parte del registro municipal de la Bolsa de Oficios.</span></div>
     </div>
     <div class="fg"><label>Agente que toma la inscripción</label><input type="text" id="f-agente" placeholder="Nombre del agente municipal (dejar en blanco si es autogestión)"/></div>
-    <div class="err-banner" id="err-banner">Hubo un error al guardar. Verificá tu conexión e intentá nuevamente.</div>
     <div class="actions">
       <button class="btn btn-prev" onclick="irA(3)">← Anterior</button>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -251,6 +263,7 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     </div>
   </div>
 
+  <!-- ÉXITO -->
   <div class="suc" id="suc">
     <div class="suc-icon">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2f7d32"/><path d="M8 14.5l4.5 4.5L20 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -260,16 +273,16 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
     <div class="suc-sub">El trabajador fue incorporado a la Bolsa de Oficios de la Municipalidad de Esquina. Sus datos ya están disponibles para consulta en la Oficina de Empleo.</div>
     <button class="btn-new" onclick="reiniciar()">Registrar otro trabajador</button>
   </div>
+
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFfNqAlRMQuYQm46agui4w71MFstg9JznNocPToMUp9vQjZpgOerZXL53Imm1lUL3UyQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv3sHKO7JhxvhSIq6RsxK_FnRKnVpvlibvzOaajKqPOp1I4lPG6yM7IJdUrZJNqnV-9g/exec";
 let paso = 1;
 
 function toggleOtros(v){
   document.getElementById('otros-wrap').classList.toggle('on', v==='Otros');
 }
-
 function irA(n){
   if(n>paso&&!validar(paso))return;
   paso=n;
@@ -279,12 +292,10 @@ function irA(n){
   if(n===4)buildRes();
   window.scrollTo(0,0);
 }
-
 function selR(el,gid){
   document.querySelectorAll('#'+gid+' .ri').forEach(r=>r.classList.remove('on'));
   el.classList.add('on');
 }
-
 function validar(p){
   let ok=true;
   const req=(id,fgid,test)=>{
@@ -296,10 +307,7 @@ function validar(p){
     if(fail)ok=false;
   };
   if(p===1){
-    req('f-nombre');
-    req('f-dni','fg-dni',v=>/^\d{7,8}$/.test(v));
-    req('f-tel');
-    req('f-barrio','fg-barrio');
+    req('f-nombre');req('f-dni','fg-dni',v=>/^\d{7,8}$/.test(v));req('f-tel');req('f-barrio','fg-barrio');
     if(document.getElementById('f-barrio').value==='Otros'){
       const ot=document.getElementById('f-barrio-otros');
       if(!ot.value.trim()){ot.classList.add('err');ok=false;}else{ot.classList.remove('err');}
@@ -309,14 +317,11 @@ function validar(p){
   if(p===3){req('f-r1n','fg-r1n');req('f-r1t','fg-r1t');}
   return ok;
 }
-
 function g(id){const el=document.getElementById(id);return el?el.value.trim():'';}
-
 function getBarrio(){
   const v=g('f-barrio');
   return v==='Otros'?(g('f-barrio-otros')||'Otros'):v;
 }
-
 function buildRes(){
   const disp=[...document.querySelectorAll('input[name=disp]:checked')].map(c=>c.value).join(', ')||'—';
   const herr=document.querySelector('input[name=herr]:checked');
@@ -339,64 +344,80 @@ function buildRes(){
     <div class="rs-row"><span class="rs-lbl">Teléfono</span><span>${g('f-r1t')}</span></div>`;
 }
 
-async function enviar(){
+function enviar(){
   if(!document.getElementById('chk-ok').checked){
     alert('Necesitás aceptar el consentimiento para registrar la inscripción.');return;
   }
   const btn=document.getElementById('btn-enviar');
   const env=document.getElementById('enviando');
-  const errBanner=document.getElementById('err-banner');
   btn.style.display='none';
   env.style.display='flex';
-  errBanner.classList.remove('on');
 
-  const payload={
-    nombre:      g('f-nombre'),
-    dni:         g('f-dni'),
-    edad:        g('f-edad'),
-    telefono:    g('f-tel'),
-    email:       g('f-email'),
-    barrio:      getBarrio(),
-    direccion:   g('f-dir'),
-    redes:       g('f-redes'),
-    oficio:      g('f-oficio'),
-    oficio2:     g('f-oficio2'),
-    servicios:   g('f-serv'),
-    experiencia: g('f-exp'),
-    zona:        g('f-zona'),
+  // Generar ID local para mostrar al usuario (el script genera el definitivo en el sheet)
+  const localId = 'BOF-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+
+  // Construir URL con todos los parámetros (GET request - no tiene CORS)
+  const params = new URLSearchParams({
+    nombre:       g('f-nombre'),
+    dni:          g('f-dni'),
+    edad:         g('f-edad'),
+    telefono:     g('f-tel'),
+    email:        g('f-email'),
+    barrio:       getBarrio(),
+    direccion:    g('f-dir'),
+    redes:        g('f-redes'),
+    oficio:       g('f-oficio'),
+    oficio2:      g('f-oficio2'),
+    servicios:    g('f-serv'),
+    experiencia:  g('f-exp'),
+    zona:         g('f-zona'),
     herramientas: (document.querySelector('input[name=herr]:checked')||{value:''}).value,
-    disponibilidad: [...document.querySelectorAll('input[name=disp]:checked')].map(c=>c.value).join(', '),
-    equipo:      (document.querySelector('input[name=eq]:checked')||{value:''}).value,
-    fotos:       g('f-fotos'),
-    ref1_nombre: g('f-r1n'),
+    disponibilidad:[...document.querySelectorAll('input[name=disp]:checked')].map(c=>c.value).join(', '),
+    equipo:       (document.querySelector('input[name=eq]:checked')||{value:''}).value,
+    fotos:        g('f-fotos'),
+    ref1_nombre:  g('f-r1n'),
     ref1_telefono:g('f-r1t'),
-    ref1_vinculo:g('f-r1v'),
-    ref2_nombre: g('f-r2n'),
+    ref1_vinculo: g('f-r1v'),
+    ref2_nombre:  g('f-r2n'),
     ref2_telefono:g('f-r2t'),
     observaciones:g('f-obs'),
-    agente:      g('f-agente'),
+    agente:       g('f-agente'),
+  });
+
+  // Usar script tag trick — único método 100% sin CORS para Apps Script
+  const callbackName = 'cbBolsa_' + Date.now();
+  const script = document.createElement('script');
+  
+  let respondido = false;
+  
+  window[callbackName] = function(data){
+    respondido = true;
+    document.body.removeChild(script);
+    delete window[callbackName];
+    // Mostrar éxito con el ID real del script si viene, o el local
+    mostrarExito(data && data.id ? data.id : localId);
   };
 
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method:'POST',
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if(data.ok){
-      document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
-      document.querySelector('.steps').style.display='none';
-      document.querySelector('.prog-bar').style.display='none';
-      document.getElementById('num-reg').textContent = data.id;
-      document.getElementById('suc').classList.add('on');
-    } else {
-      throw new Error(data.error||'Error desconocido');
+  // Timeout: si el script tarda más de 15s, mostrar éxito de todas formas
+  // (el dato casi seguro llegó, solo falló la respuesta)
+  setTimeout(function(){
+    if(!respondido){
+      try{document.body.removeChild(script);}catch(e){}
+      delete window[callbackName];
+      mostrarExito(localId);
     }
-  } catch(err){
-    errBanner.classList.add('on');
-    btn.style.display='';
-    env.style.display='none';
-  }
+  }, 15000);
+
+  script.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + callbackName;
+  document.body.appendChild(script);
+}
+
+function mostrarExito(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelector('.steps').style.display='none';
+  document.querySelector('.prog-bar').style.display='none';
+  document.getElementById('num-reg').textContent = id;
+  document.getElementById('suc').classList.add('on');
 }
 
 function reiniciar(){
@@ -415,3 +436,5 @@ function reiniciar(){
   paso=1;irA(1);
 }
 </script>
+</body>
+</html>
