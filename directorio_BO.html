@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bolsa de Oficios — Municipalidad de Esquina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --azul-800:#0a3a68;--azul-700:#0e5a9e;--azul-600:#1a4f8e;--azul-50:#e8eef5;
+  --ocre-500:#b8863d;--ocre-300:#d4a85c;
+  --papel:#f8f5ee;--n50:#f3f0eb;--n100:#e8e4dd;--n200:#d4cfc8;--n300:#b8b3ab;
+  --tinta:#171614;--tinta-2:#3a3835;--tinta-3:#6b6760;--tinta-4:#9e9a95;
+  --verde:#2f7d32;--verde-bg:#e8f5e9;--rojo:#a8322c;
+  --r-sm:4px;--r-md:8px;
+  --sh1:0 1px 2px rgba(15,23,42,.04),0 1px 1px rgba(15,23,42,.06);
+  --sh2:0 4px 12px rgba(15,23,42,.08);
+  --sh3:0 12px 32px rgba(15,23,42,.12);
+  --tr:180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--papel);font-size:15px;line-height:1.5;}
+
+.hdr{background:linear-gradient(135deg,var(--azul-800) 0%,var(--azul-600) 100%);padding:1.25rem 1.75rem;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(184,134,61,.08) 18px,rgba(184,134,61,.08) 19px);pointer-events:none;}
+.hdr-inner{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.hdr-eye{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;}
+.hdr-title{font-family:'IBM Plex Serif',serif;font-size:28px;font-weight:700;color:#fff;line-height:1.05;}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:5px;}
+.hdr-badge{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ocre-300);background:rgba(184,134,61,.15);border:1px solid rgba(184,134,61,.3);padding:5px 12px;border-radius:var(--r-sm);white-space:nowrap;flex-shrink:0;}
+
+.intro{background:#fff;border-bottom:1px solid var(--n200);padding:.85rem 1.75rem;display:flex;gap:12px;align-items:flex-start;}
+.intro-ico{width:34px;height:34px;background:var(--azul-50);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.intro-text{font-size:13px;color:var(--tinta-3);line-height:1.65;}
+.intro-text strong{color:var(--tinta);}
+.intro-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.chip{font-size:10px;font-weight:500;color:var(--tinta-2);background:var(--n50);border:1px solid var(--n200);border-radius:999px;padding:3px 10px;display:flex;align-items:center;gap:4px;}
+.chip-dot{width:6px;height:6px;border-radius:50%;}
+
+.tabs{background:#fff;border-bottom:1px solid var(--n200);display:flex;padding:0 1.75rem;}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--tinta-3);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--tr);display:flex;align-items:center;gap:6px;}
+.tab:hover{color:var(--tinta);}
+.tab.on{color:var(--azul-700);border-bottom-color:var(--azul-700);font-weight:600;}
+.tab svg{opacity:.5;transition:opacity var(--tr);}
+.tab.on svg{opacity:1;}
+
+.ctrl{background:#fff;border-bottom:1px solid var(--n200);padding:10px 1.75rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.sw{position:relative;flex:1;min-width:180px;}
+.sw input{width:100%;padding:8px 10px 8px 32px;border:1px solid var(--n200);border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--tinta);background:var(--papel);}
+.sw input:focus{outline:none;border-color:var(--azul-700);box-shadow:0 0 0 2px rgba(14,90,158,.1);}
+.sw-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tinta-4);}
+.fsel{padding:8px 10px;border:1px solid var(--n200);border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--tinta);background:var(--papel);cursor:pointer;}
+.fsel:focus{outline:none;border-color:var(--azul-700);}
+.cnt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tinta-3);margin-left:auto;white-space:nowrap;}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem 1.75rem;color:var(--tinta-3);}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--n200);border-top-color:var(--azul-700);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;}
+
+/* GRID */
+#vg{display:none;} #vg.on{display:block;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:14px;padding:1.5rem 1.75rem;}
+.empty-msg{text-align:center;padding:3rem;color:var(--tinta-3);font-size:14px;grid-column:1/-1;}
+.empty-msg strong{display:block;font-family:'IBM Plex Serif',serif;font-size:20px;color:var(--tinta);margin-bottom:6px;}
+
+/* CARD */
+.card{background:#fff;border-radius:var(--r-md);border:1px solid var(--n200);box-shadow:var(--sh1);cursor:pointer;overflow:hidden;transition:box-shadow var(--tr),border-color var(--tr),transform var(--tr);}
+.card:hover{box-shadow:var(--sh2);border-color:var(--azul-700);transform:translateY(-2px);}
+.card-hero{height:96px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.card-hero-bg{position:absolute;inset:0;width:100%;height:100%;}
+.card-av{position:relative;z-index:2;width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.95);overflow:hidden;box-shadow:var(--sh2);}
+.disp-ind{position:absolute;top:9px;right:9px;z-index:3;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid;}
+.disp-ind.si{color:var(--verde);background:rgba(47,125,50,.1);border-color:rgba(47,125,50,.25);}
+.disp-ind.no{color:var(--tinta-3);background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);}
+.card-body{padding:13px 15px 10px;}
+.card-of{font-size:10px;font-weight:600;color:var(--azul-700);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.card-name{font-family:'IBM Plex Serif',serif;font-size:19px;font-weight:700;line-height:1.1;color:var(--tinta);margin-bottom:7px;}
+.card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:9px;}
+.ctag{background:var(--azul-50);border-radius:var(--r-sm);font-size:10px;font-weight:500;color:var(--azul-700);padding:2px 6px;}
+.card-meta{font-size:11px;color:var(--tinta-3);border-top:1px solid var(--n100);padding-top:9px;display:flex;flex-direction:column;gap:4px;}
+.card-meta-row{display:flex;align-items:center;gap:6px;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;padding:7px 15px;background:var(--n50);border-top:1px solid var(--n100);}
+.exp-b{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--tinta-2);background:#fff;border:1px solid var(--n200);border-radius:var(--r-sm);padding:2px 7px;}
+
+/* MAPA */
+#vm{display:none;} #vm.on{display:flex;height:540px;position:relative;}
+#lmap{flex:1;}
+.msb{width:225px;flex-shrink:0;background:#fff;border-left:1px solid var(--n200);overflow-y:auto;}
+.msb-h{padding:9px 12px;background:var(--n50);border-bottom:1px solid var(--n200);font-size:10px;font-weight:600;color:var(--tinta-3);text-transform:uppercase;letter-spacing:.08em;}
+.sbi{padding:9px 12px;border-bottom:1px solid var(--n100);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background var(--tr);}
+.sbi:hover{background:var(--n50);}
+.sbi.on{background:var(--azul-50);border-left:2px solid var(--azul-700);}
+.sbi-av{width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.sbi-name{font-family:'IBM Plex Serif',serif;font-size:13px;font-weight:700;line-height:1.2;}
+.sbi-of{font-size:10px;font-weight:600;color:var(--azul-700);}
+.sbi-ba{font-size:10px;color:var(--tinta-3);margin-top:1px;}
+.ley{position:absolute;bottom:12px;left:12px;z-index:999;background:rgba(248,245,238,.94);border:1px solid var(--n200);border-radius:var(--r-sm);padding:7px 10px;box-shadow:var(--sh1);}
+.ley-r{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--tinta-2);margin-bottom:3px;}
+.ley-r:last-child{margin-bottom:0;}
+.ley-dot{width:8px;height:8px;border-radius:50%;}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(7,30,56,.55);z-index:9999;align-items:center;justify-content:center;}
+.mbg.on{display:flex;}
+.modal{background:var(--papel);border-radius:var(--r-md);width:92%;max-width:420px;overflow:hidden;box-shadow:var(--sh3);}
+.mh{height:108px;position:relative;display:flex;align-items:flex-end;padding:0 1.25rem .9rem;}
+.mh-bg{position:absolute;inset:0;width:100%;height:100%;}
+.mh-av{position:relative;z-index:2;width:58px;height:58px;border-radius:50%;border:3px solid rgba(255,255,255,.95);overflow:hidden;box-shadow:var(--sh2);flex-shrink:0;margin-right:12px;}
+.mh-of{font-size:11px;color:rgba(255,255,255,.75);position:relative;z-index:2;}
+.mh-name{font-family:'IBM Plex Serif',serif;font-size:22px;font-weight:700;color:#fff;position:relative;z-index:2;line-height:1.05;}
+.mclose{position:absolute;top:9px;right:11px;z-index:3;background:rgba(0,0,0,.22);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mb{padding:1rem 1.25rem;}
+.mst{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-3);border-bottom:1px solid var(--n200);padding-bottom:3px;margin:12px 0 8px;}
+.mst:first-child{margin-top:0;}
+.mrow{display:flex;gap:8px;font-size:13px;margin-bottom:5px;line-height:1.4;}
+.ml{color:var(--tinta-3);min-width:88px;font-weight:500;flex-shrink:0;}
+.mtags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.refc{background:#fff;border:1px solid var(--n200);border-radius:var(--r-sm);padding:7px 10px;font-size:12px;margin-bottom:4px;}
+.refc-name{font-weight:600;color:var(--tinta);}
+.refc-tel{color:var(--tinta-3);}
+
+/* LINK FORMULARIO */
+.inscribite{background:var(--azul-50);border-top:1px solid var(--n200);padding:.75rem 1.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.inscribite-text{font-size:13px;color:var(--tinta-3);}
+.inscribite-text strong{color:var(--tinta);}
+.btn-inscribir{background:var(--azul-700);color:#fff;padding:8px 18px;border-radius:var(--r-sm);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:background var(--tr);}
+.btn-inscribir:hover{background:var(--azul-800);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <div class="hdr-eye">CEM · Municipalidad de Esquina · Corrientes</div>
+      <div class="hdr-title">Bolsa de Oficios</div>
+      <div class="hdr-sub">Registro municipal de trabajadores y prestadores de servicios</div>
+    </div>
+    <div class="hdr-badge" id="hbadge">Cargando...</div>
+  </div>
+</div>
+
+<div class="intro">
+  <div class="intro-ico">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--azul-700)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.1-6 8-6s8 2 8 6"/><path d="M17 11l1.5 1.5L21 10"/></svg>
+  </div>
+  <div class="intro-text">
+    Registro de trabajadores y trabajadoras de Esquina que ofrecen sus servicios a vecinas y vecinos, empresas e instituciones. Funciona como un puente entre <strong>quienes buscan un oficio</strong> y <strong>quienes lo ofrecen</strong>.
+    <div class="intro-chips">
+      <span class="chip"><span class="chip-dot" style="background:var(--azul-700)"></span>Gratuito para trabajadores</span>
+      <span class="chip"><span class="chip-dot" style="background:var(--verde)"></span>Datos verificados</span>
+      <span class="chip"><span class="chip-dot" style="background:var(--ocre-500)"></span>Con referencias</span>
+      <span class="chip"><span class="chip-dot" style="background:var(--azul-800)"></span>Oficina de Empleo Municipal</span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" id="tg" onclick="sv('g')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Directorio
+  </div>
+  <div class="tab" id="tm" onclick="sv('m')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+    Mapa
+  </div>
+</div>
+
+<div class="ctrl">
+  <div class="sw">
+    <span class="sw-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg></span>
+    <input type="text" id="si" placeholder="Buscar por nombre, oficio o barrio…" oninput="filtrar()"/>
+  </div>
+  <select class="fsel" id="of" onchange="filtrar()"><option value="">Todos los oficios</option></select>
+  <select class="fsel" id="df" onchange="filtrar()"><option value="">Disponibilidad</option><option value="si">Disponible</option><option value="no">No disponible</option></select>
+  <span class="cnt" id="cl">—</span>
+</div>
+
+<div id="vg" class="on">
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Cargando trabajadores del registro...</div>
+  </div>
+  <div class="grid" id="grid" style="display:none;"></div>
+</div>
+
+<div id="vm">
+  <div id="lmap"></div>
+  <div class="msb"><div class="msb-h">Trabajadores</div><div id="sbl"></div></div>
+  <div class="ley">
+    <div class="ley-r"><span class="ley-dot" style="background:var(--verde)"></span>Disponible</div>
+    <div class="ley-r"><span class="ley-dot" style="background:var(--tinta-4)"></span>No disponible</div>
+  </div>
+</div>
+
+<div class="inscribite">
+  <div class="inscribite-text"><strong>¿Ofrecés un servicio?</strong> Inscribite gratis en la Bolsa de Oficios de la Municipalidad de Esquina.</div>
+  <a href="formulario_BO.html" class="btn-inscribir">Inscribirme →</a>
+</div>
+
+<div class="mbg" id="mbg"><div class="modal" id="modal"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzv3sHKO7JhxvhSIq6RsxK_FnRKnVpvlibvzOaajKqPOp1I4lPG6yM7IJdUrZJNqnV-9g/exec";
+
+let TODOS = [], filtrados = [], mapI = null, mL = null, cv = 'g';
+
+// ── Paleta avatares CEM ───────────────────────────────────────────────────────
+const PAL=[
+  ['#0a3a68','#4a7ab4'],['#1a4f8e','#6CBF6A'],['#6b2020','#c47a7a'],
+  ['#4a2870','#9a70c8'],['#8B4A1A','#d4a05a'],['#1a5a3a','#5ab480'],
+  ['#0e5a9e','#b8863d'],['#5a1a38','#c47090'],
+];
+function hsh(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+function ini(n){return n.split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('');}
+
+function heroBg(nombre){
+  const h=hsh(nombre);const[c1,c2]=PAL[h%PAL.length];
+  const sh=['diag','dots','grid'][Math.floor(h/PAL.length)%3];
+  let p='';
+  if(sh==='diag'){for(let i=0;i<8;i++)p+=`<rect x="${i*38-15}" y="0" width="16" height="110" fill="${c2}" opacity=".09" transform="skewX(-20)"/>`;}
+  else if(sh==='dots'){for(let i=0;i<6;i++)for(let j=0;j<3;j++)p+=`<circle cx="${i*48+24}" cy="${j*48+16}" r="3" fill="${c2}" opacity=".12"/>`;}
+  else{for(let i=0;i<6;i++)p+=`<line x1="${i*48}" y1="0" x2="${i*48}" y2="110" stroke="${c2}" stroke-width="1" opacity=".1"/>`;for(let j=0;j<3;j++)p+=`<line x1="0" y1="${j*36}" x2="280" y2="${j*36}" stroke="${c2}" stroke-width="1" opacity=".1"/>`;}
+  return `<svg class="card-hero-bg" viewBox="0 0 280 96" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="280" height="96" fill="${c1}"/>${p}</svg>`;
+}
+
+function faceAv(nombre,size=64){
+  const h=hsh(nombre);const[c1,c2]=PAL[h%PAL.length];
+  const rx=[32,4,20][h%3];
+  const hairs=[
+    `<rect x="6" y="8" width="36" height="12" rx="6" fill="${c1}" opacity=".85"/>`,
+    `<ellipse cx="24" cy="12" rx="18" ry="8" fill="${c1}" opacity=".8"/>`,
+    `<path d="M6 16 Q24 4 42 16" fill="none" stroke="${c1}" stroke-width="8" opacity=".85"/>`,
+  ];
+  return `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="48" height="48" fill="${c2}" opacity=".15"/><rect x="3" y="3" width="42" height="42" rx="${rx}" fill="${c1}"/>${hairs[h%3]}<text x="24" y="32" text-anchor="middle" font-family="IBM Plex Serif,serif" font-size="14" font-weight="700" fill="white">${ini(nombre)}</text></svg>`;
+}
+
+function mkPin(t){
+  const h=hsh(t.nombre);const[c1]=PAL[h%PAL.length];
+  const ring=t.disponible?'#2f7d32':'#9e9a95';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="40" viewBox="0 0 34 40"><ellipse cx="17" cy="38.5" rx="5" ry="2" fill="rgba(0,0,0,.18)"/><path d="M17 1.5C11.2 1.5 6.5 6.2 6.5 12c0 8 10.5 25 10.5 25s10.5-17 10.5-25C27.5 6.2 22.8 1.5 17 1.5Z" fill="${c1}" stroke="rgba(255,255,255,.9)" stroke-width="1.5"/><circle cx="17" cy="12" r="7.5" fill="rgba(255,255,255,.92)"/><circle cx="17" cy="12" r="6" fill="${c1}"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Serif,serif" font-size="6.5" font-weight="700" fill="white">${ini(t.nombre)}</text><circle cx="26" cy="5" r="4" fill="${ring}" stroke="white" stroke-width="1.5"/></svg>`;
+}
+
+// ── Cargar datos desde el Apps Script ────────────────────────────────────────
+function cargarDatos(){
+  const callbackName = 'cbDir_' + Date.now();
+  const script = document.createElement('script');
+
+  window[callbackName] = function(data){
+    document.body.removeChild(script);
+    delete window[callbackName];
+    if(data.ok){
+      TODOS = data.trabajadores || [];
+      // Si los trabajadores no tienen lat/lng, asignar posiciones aleatorias en Esquina
+      TODOS.forEach((t,i) => {
+        if(!t.lat){
+          // Distribuir en el área urbana de Esquina
+          t.lat = -30.013 + (Math.sin(hsh(t.nombre)*0.1) * 0.012);
+          t.lng = -59.528 + (Math.cos(hsh(t.nombre)*0.1) * 0.015);
+        }
+        // Parsear servicios como array
+        if(typeof t.servicios === 'string'){
+          t.servicios = t.servicios.split(',').map(s=>s.trim()).filter(Boolean);
+        }
+        if(!Array.isArray(t.servicios)) t.servicios = [];
+      });
+      filtrados = [...TODOS];
+      poblarFiltroOficios();
+      actualizarBadge();
+      document.getElementById('loading').style.display='none';
+      document.getElementById('grid').style.display='';
+      renderGrid();
+      if(cv==='m') renderMap();
+    } else {
+      document.getElementById('loading').innerHTML = '<div style="color:#a8322c;font-size:13px;">Error al cargar los datos. Intentá recargar la página.</div>';
+    }
+  };
+
+  setTimeout(()=>{
+    if(window[callbackName]){
+      document.getElementById('loading').innerHTML = '<div style="color:#a8322c;font-size:13px;">No se pudo conectar con el registro. Intentá recargar la página.</div>';
+      try{document.body.removeChild(script);}catch(e){}
+      delete window[callbackName];
+    }
+  }, 15000);
+
+  script.src = SCRIPT_URL + '?action=datos&callback=' + callbackName;
+  document.body.appendChild(script);
+}
+
+function poblarFiltroOficios(){
+  const sel = document.getElementById('of');
+  const oficios = [...new Set(TODOS.map(t=>t.oficio).filter(Boolean))].sort();
+  oficios.forEach(o=>{
+    const op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op);
+  });
+}
+
+function actualizarBadge(){
+  document.getElementById('hbadge').textContent = TODOS.length + ' inscriptos';
+}
+
+// ── Filtrar ───────────────────────────────────────────────────────────────────
+function filtrar(){
+  const q  = document.getElementById('si').value.toLowerCase();
+  const of = document.getElementById('of').value;
+  const dp = document.getElementById('df').value;
+  filtrados = TODOS.filter(t=>{
+    const mq = !q || t.nombre.toLowerCase().includes(q) || (t.oficio||'').toLowerCase().includes(q) || (t.barrio||'').toLowerCase().includes(q) || t.servicios.some(s=>s.toLowerCase().includes(q));
+    const mo = !of || t.oficio === of;
+    const md = !dp || (dp==='si' ? t.disponible : !t.disponible);
+    return mq && mo && md;
+  });
+  document.getElementById('cl').textContent = filtrados.length + ' resultado' + (filtrados.length!==1?'s':'');
+  renderGrid();
+  if(cv==='m') renderMap();
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+function renderGrid(){
+  const g = document.getElementById('grid');
+  g.innerHTML = '';
+  if(!filtrados.length){
+    g.innerHTML = '<div class="empty-msg"><strong>Sin resultados</strong>Probá con otro oficio o término de búsqueda.</div>';
+    return;
+  }
+  filtrados.forEach(t=>{
+    const c = document.createElement('div');
+    c.className = 'card';
+    const tags = t.servicios.slice(0,3).map(s=>`<span class="ctag">${s}</span>`).join('') + (t.servicios.length>3?`<span class="ctag">+${t.servicios.length-3} más</span>`:'');
+    c.innerHTML = `
+      <div class="card-hero">
+        ${heroBg(t.nombre)}
+        <div class="card-av">${faceAv(t.nombre,64)}</div>
+        <div class="disp-ind ${t.disponible?'si':'no'}">${t.disponible?'Disponible':'No disponible'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-of">${t.oficio||'—'}</div>
+        <div class="card-name">${t.nombre}</div>
+        ${tags?`<div class="card-tags">${tags}</div>`:''}
+        <div class="card-meta">
+          <div class="card-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${t.barrio||'—'}</div>
+          <div class="card-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .94h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>${t.telefono||'—'}</div>
+          ${t.redes?`<div class="card-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>${t.redes}</div>`:''}
+        </div>
+      </div>
+      <div class="card-foot">
+        <span class="exp-b">${t.experiencia?t.experiencia+' años exp.':'—'}</span>
+      </div>`;
+    c.addEventListener('click',()=>openModal(t));
+    g.appendChild(c);
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(t){
+  const refs = [
+    t.ref1_nombre ? `<div class="refc"><div class="refc-name">${t.ref1_nombre}</div><div class="refc-tel">${t.ref1_telefono||''}${t.ref1_vinculo?' · '+t.ref1_vinculo:''}</div></div>` : '',
+    t.ref2_nombre ? `<div class="refc"><div class="refc-name">${t.ref2_nombre}</div><div class="refc-tel">${t.ref2_telefono||''}</div></div>` : '',
+  ].join('');
+
+  document.getElementById('modal').innerHTML = `
+    <div class="mh">
+      ${heroBg(t.nombre).replace('class="card-hero-bg"','class="mh-bg"').replace('viewBox="0 0 280 96"','viewBox="0 0 280 108"')}
+      <div class="mh-av">${faceAv(t.nombre,58)}</div>
+      <div><div class="mh-of">${t.oficio||''}</div><div class="mh-name">${t.nombre}</div></div>
+      <button class="mclose" id="mc">✕</button>
+    </div>
+    <div class="mb">
+      <div class="mst">Contacto</div>
+      <div class="mrow"><span class="ml">Teléfono</span><span>${t.telefono||'—'}</span></div>
+      <div class="mrow"><span class="ml">Barrio</span><span>${t.barrio||'—'}</span></div>
+      <div class="mrow"><span class="ml">Zona</span><span>${t.zona||'—'}</span></div>
+      ${t.redes?`<div class="mrow"><span class="ml">Redes</span><span>${t.redes}</span></div>`:''}
+      ${t.servicios.length?`<div class="mst">Servicios</div><div class="mtags">${t.servicios.map(s=>`<span class="ctag">${s}</span>`).join('')}</div>`:''}
+      <div class="mst">Condiciones</div>
+      <div class="mrow"><span class="ml">Experiencia</span><span>${t.experiencia||'—'} años</span></div>
+      <div class="mrow"><span class="ml">Herramientas</span><span>${t.herramientas||'—'}</span></div>
+      <div class="mrow"><span class="ml">Disponibilidad</span><span style="font-weight:600;color:${t.disponible?'var(--verde)':'var(--tinta-3)'}">${t.disponible?'Disponible ahora':'No disponible'}</span></div>
+      ${t.disponibilidadHoraria?`<div class="mrow"><span class="ml">Horarios</span><span>${t.disponibilidadHoraria}</span></div>`:''}
+      ${refs?`<div class="mst">Referencias</div>${refs}`:''}
+    </div>`;
+  document.getElementById('mbg').classList.add('on');
+  document.getElementById('mc').onclick=()=>document.getElementById('mbg').classList.remove('on');
+  document.getElementById('mbg').onclick=e=>{if(e.target===document.getElementById('mbg'))document.getElementById('mbg').classList.remove('on');};
+}
+
+// ── Mapa ──────────────────────────────────────────────────────────────────────
+function sv(v){
+  cv=v;
+  document.getElementById('vg').classList.toggle('on',v==='g');
+  document.getElementById('vm').classList.toggle('on',v==='m');
+  document.getElementById('tg').classList.toggle('on',v==='g');
+  document.getElementById('tm').classList.toggle('on',v==='m');
+  if(v==='m') setTimeout(initMap,80);
+}
+
+function initMap(){
+  if(!mapI){
+    mapI=L.map('lmap').setView([-30.016,-59.528],14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19}).addTo(mapI);
+    mL=L.layerGroup().addTo(mapI);
+  }
+  renderMap();
+}
+
+function jitter(lat,lng,idx,total){
+  if(total<=1)return[lat,lng];
+  const a=(2*Math.PI/total)*idx,r=0.0006;
+  return[lat+Math.cos(a)*r,lng+Math.sin(a)*r];
+}
+
+function renderMap(){
+  if(!mL)return;
+  mL.clearLayers();
+  const sb=document.getElementById('sbl');sb.innerHTML='';
+  if(!filtrados.length){sb.innerHTML='<div style="padding:1rem;font-size:12px;color:var(--tinta-3);text-align:center">Sin resultados</div>';return;}
+  const groups={};
+  filtrados.forEach(t=>{const k=`${(t.lat||0).toFixed(3)}_${(t.lng||0).toFixed(3)}`;if(!groups[k])groups[k]=[];groups[k].push(t);});
+  filtrados.forEach(t=>{
+    const k=`${(t.lat||0).toFixed(3)}_${(t.lng||0).toFixed(3)}`,grp=groups[k],idx=grp.indexOf(t);
+    const[jl,jg]=jitter(t.lat,t.lng,idx,grp.length);
+    const icon=L.divIcon({html:mkPin(t),className:'',iconSize:[34,40],iconAnchor:[17,38.5],popupAnchor:[0,-40]});
+    const marker=L.marker([jl,jg],{icon}).addTo(mL);
+    marker.bindPopup(`<div style="font-family:'IBM Plex Sans',sans-serif;min-width:155px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;">${faceAv(t.nombre,32)}</div><div><div style="font-family:'IBM Plex Serif',serif;font-size:14px;font-weight:700;color:#171614;">${t.nombre}</div><div style="font-size:10px;font-weight:600;color:#0e5a9e;text-transform:uppercase;letter-spacing:.06em;">${t.oficio||''}</div></div></div><div style="font-size:11px;color:#6b6760;margin-bottom:2px;">${t.barrio||''}</div><div style="font-size:11px;color:#6b6760;margin-bottom:7px;">${t.telefono||''}</div><div style="font-size:11px;font-weight:600;color:${t.disponible?'#2f7d32':'#9e9a95'};margin-bottom:8px;">${t.disponible?'Disponible ahora':'No disponible'}</div><div onclick="openModalFromMap(${TODOS.indexOf(t)})" style="background:#0e5a9e;color:#fff;text-align:center;padding:6px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">Ver perfil</div></div>`,{maxWidth:210});
+    const item=document.createElement('div');item.className='sbi';
+    item.innerHTML=`<div class="sbi-av">${faceAv(t.nombre,30)}</div><div><div class="sbi-name">${t.nombre}</div><div class="sbi-of">${t.oficio||''}</div><div class="sbi-ba">${t.barrio||''}</div></div>`;
+    item.onclick=()=>{mapI.setView([jl,jg],16);marker.openPopup();document.querySelectorAll('.sbi').forEach(e=>e.classList.remove('on'));item.classList.add('on');};
+    sb.appendChild(item);
+  });
+}
+window.openModalFromMap=function(idx){if(TODOS[idx])openModal(TODOS[idx]);};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+cargarDatos();
+</script>
+</body>
+</html>
