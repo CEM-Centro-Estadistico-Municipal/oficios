@@ -122,6 +122,8 @@ body{font-family:'IBM Plex Sans',sans-serif;color:var(--tinta);background:var(--
 .refc{background:#fff;border:1px solid var(--n200);border-radius:var(--r-sm);padding:7px 10px;font-size:12px;margin-bottom:4px;}
 .refc-name{font-weight:600;color:var(--tinta);}
 .refc-tel{color:var(--tinta-3);}
+.wa-link{color:var(--verde);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;}
+.wa-link:hover{text-decoration:underline;}
 
 /* LINK FORMULARIO */
 .inscribite{background:var(--azul-50);border-top:1px solid var(--n200);padding:.75rem 1.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
@@ -217,6 +219,20 @@ const PAL=[
   ['#0e5a9e','#b8863d'],['#5a1a38','#c47090'],
 ];
 function hsh(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+
+// ── Link directo a WhatsApp a partir del teléfono ──────────────────────────────
+function waLink(tel){
+  let d = String(tel||'').replace(/\D/g,'');
+  if(!d) return '';
+  d = d.replace(/^0/,'');                    // saca el 0 característica nacional, si está
+  if(d.startsWith('3777')){                  // código de área de Esquina
+    let resto = d.slice(4).replace(/^15/,''); // saca el 15 de celular local, si está
+    d = '3777' + resto;
+  }
+  if(!d.startsWith('54')) d = '54' + d;
+  if(!d.startsWith('549')) d = d.slice(0,2) + '9' + d.slice(2);
+  return 'https://wa.me/' + d;
+}
 function ini(n){return n.split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('');}
 
 function heroBg(nombre){
@@ -373,7 +389,7 @@ function openModal(t){
     </div>
     <div class="mb">
       <div class="mst">Contacto</div>
-      <div class="mrow"><span class="ml">Teléfono</span><span>${t.telefono||'—'}</span></div>
+      <div class="mrow"><span class="ml">Teléfono</span><span>${t.telefono?`<a href="${waLink(t.telefono)}" target="_blank" rel="noopener" class="wa-link">${t.telefono} <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-left:2px;"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.5h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3 4.7 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.1-.3-.2-.5-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.2c-1.6 0-3.2-.4-4.5-1.3l-.3-.2-3.3.9.9-3.2-.2-.3c-1-1.4-1.5-3.1-1.5-4.8 0-4.5 3.7-8.2 8.2-8.2 4.5 0 8.2 3.7 8.2 8.2s-3.7 8.2-8.2 8.2z"/></svg></a>`:'—'}</span></div>
       <div class="mrow"><span class="ml">Barrio</span><span>${t.barrio||'—'}</span></div>
       <div class="mrow"><span class="ml">Zona</span><span>${t.zona||'—'}</span></div>
       ${t.redes?`<div class="mrow"><span class="ml">Redes</span><span>${t.redes}</span></div>`:''}
